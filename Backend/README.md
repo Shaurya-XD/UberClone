@@ -417,3 +417,266 @@ The token contains:
 - Signed with `JWT_SECRET` environment variable
 
 ---
+
+## User Profile Endpoint
+
+### `GET /users/profile`
+
+#### Description
+Retrieves the authenticated user's profile information. This endpoint requires a valid JWT authentication token and returns the current user's details.
+
+---
+
+### Request Format
+
+#### HTTP Method
+```
+GET
+```
+
+#### Headers
+The endpoint requires authentication via JWT token in the Authorization header:
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+#### Request Body
+No body required.
+
+---
+
+### Response Format
+
+#### Success Response (HTTP 200 - OK)
+```json
+{
+  "user": {
+    "_id": "mongodb_object_id",
+    "fullName": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "socketId": null
+  }
+}
+```
+
+#### Error Responses
+
+**HTTP 401 - Unauthorized (Missing or Invalid Token)**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+This response is returned when:
+- Authorization header is missing
+- Token is invalid or expired
+- Token format is incorrect
+
+**HTTP 404 - Not Found (User Deleted)**
+```json
+{
+  "message": "User not found"
+}
+```
+
+This response is returned when the user associated with the token no longer exists in the database.
+
+**HTTP 500 - Server Error**
+```json
+{
+  "message": "Server error"
+}
+```
+
+---
+
+### Status Codes
+
+| Status Code | Meaning | Description |
+|-------------|---------|-------------|
+| `200` | OK | User profile retrieved successfully. |
+| `401` | Unauthorized | Missing or invalid authentication token. |
+| `404` | Not Found | User not found in the database. |
+| `500` | Internal Server Error | Server error occurred while fetching profile. |
+
+---
+
+### Example Usage
+
+#### cURL Request
+```bash
+curl -X GET http://localhost:3000/users/profile \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### JavaScript Fetch
+```javascript
+const response = await fetch('/users/profile', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+#### Axios Request
+```javascript
+import axios from 'axios';
+
+const getProfile = async (token) => {
+  try {
+    const response = await axios.get('/users/profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log('Profile retrieved:', response.data.user);
+  } catch (error) {
+    console.error('Failed to fetch profile:', error.response.data);
+  }
+};
+```
+
+---
+
+### Authentication Requirements
+
+- Valid JWT token is required
+- Token can be obtained from `/users/register` or `/users/login`
+- Token must be included in the Authorization header with format: `Bearer <token>`
+
+---
+
+## User Logout Endpoint
+
+### `GET /users/logout`
+
+#### Description
+Logs out the current user by invalidating their authentication token. This endpoint clears the authentication cookie and blacklists the token to prevent further use.
+
+---
+
+### Request Format
+
+#### HTTP Method
+```
+GET
+```
+
+#### Headers (Optional)
+The Authorization header can be provided to blacklist the specific token:
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+If no Authorization header is provided, the token from cookies will be blacklisted.
+
+#### Request Body
+No body required.
+
+---
+
+### Response Format
+
+#### Success Response (HTTP 200 - OK)
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+#### Error Responses
+
+**HTTP 500 - Server Error**
+```json
+{
+  "message": "Server error"
+}
+```
+
+---
+
+### Status Codes
+
+| Status Code | Meaning | Description |
+|-------------|---------|-------------|
+| `200` | OK | User successfully logged out. Token has been invalidated. |
+| `500` | Internal Server Error | Server error occurred during logout. |
+
+---
+
+### Example Usage
+
+#### cURL Request
+```bash
+curl -X GET http://localhost:3000/users/logout \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+Or with cookie (if token is stored as cookie):
+```bash
+curl -X GET http://localhost:3000/users/logout \
+  -b "token=<your_jwt_token>"
+```
+
+#### JavaScript Fetch
+```javascript
+const response = await fetch('/users/logout', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+#### Axios Request
+```javascript
+import axios from 'axios';
+
+const logout = async (token) => {
+  try {
+    const response = await axios.get('/users/logout', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log('Logout successful:', response.data.message);
+  } catch (error) {
+    console.error('Logout failed:', error.response.data);
+  }
+};
+```
+
+---
+
+### Token Invalidation
+
+- The authentication token is blacklisted and cannot be reused
+- The authentication cookie is cleared from the client
+- Subsequent requests using the invalidated token will be rejected
+- The token remains in the blacklist for the duration of its expiration time (7 days)
+
+---
+
+### Security Notes
+
+- Tokens are blacklisted to prevent reuse after logout
+- Cookie-based tokens are also cleared on the client side
+- It is recommended to delete the stored token on the client after logout
+- Token blacklist is stored in the database for verification on protected routes
+
+---

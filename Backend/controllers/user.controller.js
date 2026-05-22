@@ -1,6 +1,7 @@
 const userModel = require('../models/user.model');
 const userService = require('../services/user.service');
 const { validationResult } = require('express-validator');
+const Blacklist = require('../models/blacklistToken.model');
 
 exports.registerUser = async (req, res) => {
     const errors = validationResult(req);
@@ -40,9 +41,38 @@ exports.loginUser = async (req, res) => {
         }
 
         const token = user.generateAuthToken();
+
+        res.cookie('token', token);
         res.status(200).json({ token, message: 'Login successful', user });
     } catch (error) {
         console.error('Error logging in user:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getUserProfile = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ user });
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.logoutUser = async (req, res) => {
+    try {
+        res.clearCookie('token');
+        const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+        await Blacklist.create({ token });
+
+        res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+        console.error('Error logging out user:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
