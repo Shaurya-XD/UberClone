@@ -683,7 +683,7 @@ const logout = async (token) => {
 
 ## Captain Registration Endpoint
 
-### `POST /captain/register`
+### `POST /captains/register`
 
 #### Description
 Registers a new captain (driver) in the system. This endpoint creates a new captain account with personal credentials and vehicle information, returning an authentication token upon successful registration. Captains are associated with their vehicle details for ride management.
@@ -911,7 +911,7 @@ The endpoint expects a JSON object with the following structure:
 
 #### cURL Request
 ```bash
-curl -X POST http://localhost:3000/captain/register \
+curl -X POST http://localhost:3000/captains/register \
   -H "Content-Type: application/json" \
   -d '{
     "fullName": {
@@ -931,7 +931,7 @@ curl -X POST http://localhost:3000/captain/register \
 
 #### JavaScript Fetch
 ```javascript
-const response = await fetch('/captain/register', {
+const response = await fetch('/captains/register', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -962,7 +962,7 @@ import axios from 'axios';
 
 const registerCaptain = async () => {
   try {
-    const response = await axios.post('/captain/register', {
+    const response = await axios.post('/captains/register', {
       fullName: {
         firstName: 'Rajesh',
         lastName: 'Kumar'
@@ -1047,9 +1047,460 @@ The vehicle location fields (`lat`, `lng`) are initially set to `null` and can b
 
 ### Next Steps After Registration
 
-1. **Login**: Use `/captain/login` to obtain a token if registration was successful
+1. **Login**: Use `/captains/login` to obtain a token if registration was successful
 2. **Update Profile**: Use captain profile update endpoint to modify captain details
 3. **Update Location**: Send real-time location coordinates when captain comes online
 4. **Accept Rides**: Once authenticated and active, captain can receive and accept ride requests
 
 ---
+
+## Captain Login Endpoint
+
+### `POST /captains/login`
+
+#### Description
+Authenticates a captain and issues a JWT token for subsequent authenticated requests. This endpoint validates the captain's email and password credentials.
+
+---
+
+### Request Format
+
+#### HTTP Method
+```
+POST
+```
+
+#### Content-Type
+```
+application/json
+```
+
+#### Request Body
+The endpoint expects a JSON object with the following structure:
+
+```json
+{
+  "email": "string (required, must be a valid email format)",
+  "password": "string (required)"
+}
+```
+
+#### Field Requirements
+
+| Field | Type | Requirements | Description |
+|-------|------|--------------|-------------|
+| `email` | String | Required, valid email format | Captain's registered email address |
+| `password` | String | Required | Captain's password |
+
+---
+
+### Response Format
+
+#### Success Response (HTTP 200 - OK)
+```json
+{
+  "token": "jwt_token_string",
+  "message": "Login successful",
+  "captain": {
+    "_id": "mongodb_object_id",
+    "fullName": {
+      "firstName": "Rajesh",
+      "lastName": "Kumar"
+    },
+    "email": "rajesh.kumar@example.com",
+    "status": "inactive",
+    "vehicle": {
+      "color": "Red",
+      "plate": "DL01AB1234",
+      "capacity": 4,
+      "vehicleType": "car",
+      "location": {
+        "lat": null,
+        "lng": null
+      }
+    },
+    "socketId": null
+  }
+}
+```
+
+#### Error Responses
+
+**HTTP 400 - Bad Request (Invalid Email Format)**
+```json
+{
+  "errors": [
+    {
+      "type": "field",
+      "value": "invalid-email",
+      "msg": "Please provide a valid email",
+      "path": "email",
+      "location": "body"
+    }
+  ]
+}
+```
+
+**HTTP 400 - Bad Request (Missing Password)**
+```json
+{
+  "errors": [
+    {
+      "type": "field",
+      "msg": "Password is required",
+      "path": "password",
+      "location": "body"
+    }
+  ]
+}
+```
+
+**HTTP 400 - Bad Request (Invalid Credentials)**
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+**HTTP 500 - Internal Server Error**
+```json
+{
+  "message": "Server error"
+}
+```
+
+---
+
+### Status Codes
+
+| Status Code | Meaning | Description |
+|-------------|---------|-------------|
+| `200` | OK | Captain successfully authenticated. JWT token returned. |
+| `400` | Bad Request | Validation error or invalid credentials. |
+| `500` | Internal Server Error | Server error occurred during login. |
+
+---
+
+### Example Usage
+
+#### cURL Request
+```bash
+curl -X POST http://localhost:3000/captains/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "rajesh.kumar@example.com",
+    "password": "secure123"
+  }'
+```
+
+#### JavaScript Fetch
+```javascript
+const response = await fetch('/captains/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: 'rajesh.kumar@example.com',
+    password: 'secure123'
+  })
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+#### Axios Request
+```javascript
+import axios from 'axios';
+
+const loginCaptain = async () => {
+  try {
+    const response = await axios.post('/captains/login', {
+      email: 'rajesh.kumar@example.com',
+      password: 'secure123'
+    });
+    
+    console.log('Login successful:', response.data);
+    console.log('Token:', response.data.token);
+  } catch (error) {
+    console.error('Login failed:', error.response.data);
+  }
+};
+```
+
+---
+
+### Authentication Token
+
+Upon successful login, a JWT token is issued that can be used for authenticated requests:
+
+```
+Header: Authorization: Bearer <token>
+```
+
+The token contains:
+- Captain's MongoDB `_id`
+- Expiration time: 7 days
+- Signed with `JWT_SECRET` environment variable
+
+---
+
+## Captain Profile Endpoint
+
+### `GET /captains/profile`
+
+#### Description
+Retrieves the authenticated captain's profile information. This endpoint requires a valid JWT token for authentication.
+
+---
+
+### Request Format
+
+#### HTTP Method
+```
+GET
+```
+
+#### Headers (Required)
+```
+Authorization: Bearer <jwt_token>
+```
+
+#### Request Body
+No body required.
+
+---
+
+### Response Format
+
+#### Success Response (HTTP 200 - OK)
+```json
+{
+  "captain": {
+    "_id": "mongodb_object_id",
+    "fullName": {
+      "firstName": "Rajesh",
+      "lastName": "Kumar"
+    },
+    "email": "rajesh.kumar@example.com",
+    "status": "inactive",
+    "vehicle": {
+      "color": "Red",
+      "plate": "DL01AB1234",
+      "capacity": 4,
+      "vehicleType": "car",
+      "location": {
+        "lat": null,
+        "lng": null
+      }
+    },
+    "socketId": null
+  }
+}
+```
+
+#### Error Responses
+
+**HTTP 401 - Unauthorized (Missing Token)**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+**HTTP 401 - Unauthorized (Invalid Token)**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+**HTTP 500 - Internal Server Error**
+```json
+{
+  "message": "Server error"
+}
+```
+
+---
+
+### Status Codes
+
+| Status Code | Meaning | Description |
+|-------------|---------|-------------|
+| `200` | OK | Captain profile retrieved successfully. |
+| `401` | Unauthorized | Missing or invalid authentication token. |
+| `500` | Internal Server Error | Server error occurred while fetching profile. |
+
+---
+
+### Example Usage
+
+#### cURL Request
+```bash
+curl -X GET http://localhost:3000/captains/profile \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### JavaScript Fetch
+```javascript
+const response = await fetch('/captains/profile', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+#### Axios Request
+```javascript
+import axios from 'axios';
+
+const getCaptainProfile = async (token) => {
+  try {
+    const response = await axios.get('/captains/profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log('Profile retrieved:', response.data.captain);
+  } catch (error) {
+    console.error('Failed to fetch profile:', error.response.data);
+  }
+};
+```
+
+---
+
+### Authentication Requirements
+
+- Valid JWT token is required
+- Token can be obtained from `/captains/register` or `/captains/login`
+- Token must be included in the Authorization header with format: `Bearer <token>`
+
+---
+
+## Captain Logout Endpoint
+
+### `GET /captains/logout`
+
+#### Description
+Logs out the authenticated captain by invalidating their authentication token. This endpoint clears the authentication cookie and blacklists the token to prevent further use.
+
+---
+
+### Request Format
+
+#### HTTP Method
+```
+GET
+```
+
+#### Headers (Optional)
+The Authorization header can be provided to blacklist the specific token:
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+If no Authorization header is provided, the token from cookies will be blacklisted.
+
+#### Request Body
+No body required.
+
+---
+
+### Response Format
+
+#### Success Response (HTTP 200 - OK)
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+#### Error Responses
+
+**HTTP 500 - Server Error**
+```json
+{
+  "message": "Server error"
+}
+```
+
+---
+
+### Status Codes
+
+| Status Code | Meaning | Description |
+|-------------|---------|-------------|
+| `200` | OK | Captain successfully logged out. Token has been invalidated. |
+| `500` | Internal Server Error | Server error occurred during logout. |
+
+---
+
+### Example Usage
+
+#### cURL Request
+```bash
+curl -X GET http://localhost:3000/captains/logout \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+Or with cookie (if token is stored as cookie):
+```bash
+curl -X GET http://localhost:3000/captains/logout \
+  -b "token=<your_jwt_token>"
+```
+
+#### JavaScript Fetch
+```javascript
+const response = await fetch('/captains/logout', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+#### Axios Request
+```javascript
+import axios from 'axios';
+
+const logoutCaptain = async (token) => {
+  try {
+    const response = await axios.get('/captains/logout', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log('Logout successful:', response.data);
+  } catch (error) {
+    console.error('Logout failed:', error.response.data);
+  }
+};
+```
+
+---
+
+### Authentication Requirements
+
+- Valid JWT token is required (can be from cookies or Authorization header)
+- Token must be included in the Authorization header or as a cookie with format: `Bearer <token>` or `token=<token>`
+
+---
+
+### Token Blacklisting
+
+- Token blacklist is stored in the database for verification on protected routes
+- Blacklisted tokens cannot be used for future requests
+- Token is cleared from cookies upon logout
