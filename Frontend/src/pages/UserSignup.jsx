@@ -1,28 +1,40 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useContext, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import {UserDataContext} from '../context/userContext'
 
 const UserSignup = () => {
   const [email, setemail] = useState('')
   const [firstName, setfirstName] = useState('')
   const [lastName, setlastName] = useState('')
   const [password, setpassword] = useState('')
-  const [userData, setuserData] = useState({})
 
-  const submitHandler = (e) => {
+  const navigate = useNavigate();
+
+  const {user, setuser} = useContext(UserDataContext);
+
+  const submitHandler = async(e) => {
     e.preventDefault();
-    setuserData({
+    const newUser = {
       fullName:{
         firstName,
         lastName
       },
       email,
       password
-    });
+    };
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+    if(response.status == 201){
+      const data = response.data
+      setuser(data.user)
+      localStorage.setItem('token', data.token);
+      navigate('/home')
+    }
+
     setpassword('');
     setemail('');
     setfirstName('');
     setlastName('');
-    console.log(userData);
   }
 
   return (
@@ -70,7 +82,7 @@ const UserSignup = () => {
             value={password}
             onChange={(e) => setpassword(e.target.value)}
           />
-          <button className='bg-black w-full text-white mt-4 py-2 active:scale-95 rounded-md'>Sign Up</button>
+          <button className='bg-black w-full text-white mt-4 py-2 active:scale-95 rounded-md'>Create Your Account</button>
           <p className='mt-1 text-center'>Already have an account? <Link to="/login" className='text-blue-500'>Login</Link></p>
         </form>
       </div>

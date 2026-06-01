@@ -5,7 +5,7 @@ const { registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain } = requ
 const { loginUser } = require('../controllers/user.controller');
 const { authCaptain } = require('../middlewares/auth.middleware');
 
-router.post('/captains/register', [
+router.post('/register', [
     body('fullName.firstName').isLength({ min: 3 }).withMessage('First name must be at least 3 characters long'),
     body('email').isEmail().withMessage('Please provide a valid email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
@@ -15,13 +15,13 @@ router.post('/captains/register', [
     body('vehicle.vehicleType').isIn(['car', 'motorcycle', 'auto']).withMessage('Vehicle type must be car, motorcycle, or auto')
 ], registerCaptain);
 
-router.post('/captains/login', [
+router.post('/login', [
     body('email').isEmail().withMessage('Please provide a valid email'),
     body('password').exists().withMessage('Password is required')
 ], loginCaptain);
 
-router.get('/captains/profile', authCaptain, getCaptainProfile);
+router.get('/profile', authCaptain, getCaptainProfile);
 
-router.get('/captains/logout', authCaptain, logoutCaptain);
+router.get('/logout', authCaptain, logoutCaptain);
 
 module.exports = router;

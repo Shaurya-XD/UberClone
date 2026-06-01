@@ -17,8 +17,14 @@ exports.authUser = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await userModel.findById(decoded._id);
-        return next();
+        const user = await userModel.findById(decoded._id);
+        if(!user){
+            return res.status(401).json({
+                message: "Unauthorized user"
+            });
+        }
+        req.user = user;
+        next();
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token.' });
     }
@@ -37,8 +43,14 @@ exports.authCaptain = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.captain = await captainModel.findById(decoded._id);
-        return next();
+        const captain = await captainModel.findById(decoded._id);
+        if (!captain) {
+            return res.status(401).json({
+                message: "Unauthorized captain"
+            });
+        }
+        req.captain = captain;
+        next();
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token.' });
     }   
