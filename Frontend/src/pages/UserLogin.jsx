@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { UserDataContext } from '../context/userContext'
+import { UserDataContext } from '../context/UserContext'
+import { SocketDataContext } from '../context/SocketContext'
 import axios from 'axios'
 
 const UserLogin = () => {
@@ -8,6 +9,7 @@ const UserLogin = () => {
   const [password, setpassword] = useState('')
 
   const {user, setuser} = useContext(UserDataContext);
+  const { connectSocketWithToken } = useContext(SocketDataContext);
   const navigate = useNavigate();
 
   const submitHandler = async(e) => {
@@ -22,8 +24,12 @@ const UserLogin = () => {
       const data = response.data;
       setuser(data.user);
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userToken', data.token);
+      localStorage.setItem('role', 'user');
+      if (connectSocketWithToken) connectSocketWithToken(data.token, 'user');
       navigate('/home')
     }
+
 
     setpassword('');
     setemail('');

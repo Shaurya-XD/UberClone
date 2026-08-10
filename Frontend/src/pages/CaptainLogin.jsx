@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CaptainDataContext } from '../context/captainContext'
+import { CaptainDataContext } from '../context/CaptainContext'
+import { SocketDataContext } from '../context/SocketContext'
 import axios from 'axios'
 
 const CaptainLogin = () => {
@@ -8,6 +9,7 @@ const CaptainLogin = () => {
   const [password, setpassword] = useState('')
   
   const {captain, setcaptain} = useContext(CaptainDataContext);
+  const { connectSocketWithToken } = useContext(SocketDataContext);
   const navigate = useNavigate()
 
   const submitHandler = async (e) => {
@@ -21,7 +23,10 @@ const CaptainLogin = () => {
     if(response.status === 200){
       const data = response.data;
       localStorage.setItem('token', data.token);
+      localStorage.setItem('captainToken', data.token);
+      localStorage.setItem('role', 'captain');
       setcaptain(data.captain)
+      if (connectSocketWithToken) connectSocketWithToken(data.token, 'captain');
       navigate('/captain-home')
     }
 

@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CaptainDataContext } from '../context/captainContext'
+import { CaptainDataContext } from '../context/CaptainContext'
+import { SocketDataContext } from '../context/SocketContext'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -17,6 +18,7 @@ const CaptainSignup = () => {
   const [vehicleType, setvehicleType] = useState('')
 
   const {captain, setcaptain} = useContext(CaptainDataContext);
+  const { connectSocketWithToken } = useContext(SocketDataContext);
   
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -41,8 +43,12 @@ const CaptainSignup = () => {
       const data = response.data;
       setcaptain(data.captain);
       localStorage.setItem('token', data.token);
+      localStorage.setItem('captainToken', data.token);
+      localStorage.setItem('role', 'captain');
+      if (connectSocketWithToken) connectSocketWithToken(data.token, 'captain');
       navigate('/captain-home');
     }
+
 
     setpassword('');
     setemail('');

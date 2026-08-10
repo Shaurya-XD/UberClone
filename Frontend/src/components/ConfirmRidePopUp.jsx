@@ -1,68 +1,122 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from 'react';
 
+const ConfirmRidePopUp = ({ ride, startRide, setconfirmRidePopUpPanel, setridePopUpPanel, error }) => {
+    const [otp, setOtp] = useState('');
+    const [localError, setLocalError] = useState('');
 
-const ConfirmRidePopUp = ({ setconfirmRidePopUpPanel, setridePopUpPanel }) => {
-	const [otp, setotp] = useState('')
-	const submitHandler = (e) => {
-		e.preventDefault();
-	}
-	return (
-		<div className='h-screen pt-3'>
-			<h5 onClick={()=>{
-            setconfirmRidePopUpPanel(false)
-        }} className='text-center text-3xl'><i className="ri-arrow-down-wide-line"></i></h5>
-			<h2 className='text-center text-2xl font-semibold py-2'>Confirm this ride to Start</h2>
-			<div className='flex justify-between items-center bg-yellow-300 mx-2 mb-2 rounded-2xl my-4'>
-				<div className='flex justify-start items-center'>
-					<img className='p-2 h-16 w-16 object-cover rounded-full' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmAAuoVZZwjZYKQA_oJBPSpa_-LbPcBUPuiA&s" alt="" />
-					<h2 className='text-xl font-medium'>Eren Yeager</h2>
-				</div>
-				<h5 className='px-2 text-lg font-semibold'>2.2 KM</h5>
-			</div>
-			<div>
-				<div className='py-4'>
-					<div className='flex justify-start items-center gap-5 px-5 py-3 border '>
-						<h4 className='text-2xl'><i className="ri-map-pin-2-line"></i></h4>
-						<div className='leading-5'>
-							<h3 className='font-medium'>562/11-A</h3>
-							<p className='text-sm text-gray-600'>Kankariya Talab, Ahembdabad</p>
-						</div>
-					</div>
-					<div className='flex justify-start items-center gap-5 px-5 py-3 border '>
-						<h4 className='text-2xl'><i className="ri-map-pin-2-fill"></i></h4>
-						<div className='leading-5'>
-							<h3 className='font-medium'>562/11-A</h3>
-							<p className='text-sm text-gray-600'>Kankariya Talab, Ahembdabad</p>
-						</div>
-					</div>
-					<div className='flex justify-start items-center gap-5 px-5 py-3 border '>
-						<h4 className='text-2xl'><i className="ri-money-rupee-circle-line"></i></h4>
-						<div className=' leading-5'>
-							<h3 className='font-medium'>₹193</h3>
-							<p className='text-sm text-gray-600'>Cash</p>
-						</div>
-					</div>
-				</div>
+    const userName = ride?.user?.fullName
+        ? `${ride.user.fullName.firstName} ${ride.user.fullName.lastName || ''}`
+        : 'Rider';
 
-				<form className='px-6 mt-14 py-4' onSubmit={(e) => {
-					submitHandler(e)
-				}}>
-					<input value={otp} onChange={(e)=> {
-						setotp(e.target.value)
-					}} type="text" placeholder='Enter OTP' className='bg-gray-200 w-full text-black rounded-lg px-10 py-2 mb-2' />
-					<div className='flex justify-between items-center'>
-						<button onClick={() => {
-							setconfirmRidePopUpPanel(false)
-							setridePopUpPanel(false)
-						}} className='bg-red-500 my-2 py-1.5 px-12 rounded-lg text-white'>Cancel</button>
-						<Link to='/captain-riding' className='bg-green-400 my-2 py-1.5 px-12 rounded-lg text-white'>Confirm</Link>
-					</div>
-				</form>
+    const pickupAddress = typeof ride?.pickup === 'string' ? ride.pickup : ride?.pickup?.address || '';
+    const destAddress = typeof ride?.destination === 'string' ? ride.destination : ride?.destination?.address || '';
+    const distanceKm = ride?.distance ? (ride.distance / 1000).toFixed(1) : '2.2';
 
-			</div>
-		</div>
-	)
-}
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        setLocalError('');
 
-export default ConfirmRidePopUp
+        if (!otp || otp.length !== 4) {
+            setLocalError('Please enter a valid 4-digit OTP');
+            return;
+        }
+
+        startRide(otp);
+    };
+
+    return (
+        <div className="pt-2 p-4 h-full flex flex-col justify-between overflow-y-auto">
+            <div>
+                <h5
+                    onClick={() => {
+                        setconfirmRidePopUpPanel(false);
+                    }}
+                    className="text-center text-3xl cursor-pointer text-gray-500"
+                >
+                    <i className="ri-arrow-down-wide-line"></i>
+                </h5>
+                <h2 className="text-center text-2xl font-bold py-1 text-gray-900">Confirm OTP to Start Ride</h2>
+
+                <div className="flex justify-between items-center bg-yellow-400 p-3 mx-1 my-2 rounded-2xl shadow-sm">
+                    <div className="flex justify-start items-center gap-3">
+                        <img
+                            className="h-14 w-14 object-cover rounded-full border-2 border-black"
+                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmAAuoVZZwjZYKQA_oJBPSpa_-LbPcBUPuiA&s"
+                            alt="Rider"
+                        />
+                        <h2 className="text-lg font-bold text-gray-900">{userName}</h2>
+                    </div>
+                    <h5 className="px-3 py-1 bg-black text-white text-sm font-bold rounded-full">{distanceKm} KM</h5>
+                </div>
+
+                <div className="py-2">
+                    <div className="flex justify-start items-center gap-4 px-4 py-3 border-b">
+                        <h4 className="text-2xl text-green-600">
+                            <i className="ri-map-pin-user-fill"></i>
+                        </h4>
+                        <div className="leading-4">
+                            <h3 className="font-semibold text-gray-800 text-sm">Pickup Location</h3>
+                            <p className="text-xs text-gray-600 line-clamp-1">{pickupAddress || 'Pickup Location'}</p>
+                        </div>
+                    </div>
+                    <div className="flex justify-start items-center gap-4 px-4 py-3 border-b">
+                        <h4 className="text-2xl text-red-600">
+                            <i className="ri-flag-fill"></i>
+                        </h4>
+                        <div className="leading-4">
+                            <h3 className="font-semibold text-gray-800 text-sm">Destination</h3>
+                            <p className="text-xs text-gray-600 line-clamp-1">{destAddress || 'Destination Location'}</p>
+                        </div>
+                    </div>
+                    <div className="flex justify-start items-center gap-4 px-4 py-3 border-b">
+                        <h4 className="text-2xl text-emerald-600">
+                            <i className="ri-money-rupee-circle-line"></i>
+                        </h4>
+                        <div className="leading-4">
+                            <h3 className="font-bold text-gray-900 text-base">₹{ride?.fare || 0}</h3>
+                            <p className="text-xs text-gray-600">Cash Payment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form className="mt-4" onSubmit={submitHandler}>
+                {(error || localError) && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-xl text-center text-sm font-semibold mb-3">
+                        {error || localError}
+                    </div>
+                )}
+
+                <input
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    type="text"
+                    maxLength={4}
+                    placeholder="Enter 4-Digit OTP"
+                    className="bg-gray-100 w-full text-center text-2xl font-extrabold tracking-widest text-black rounded-xl py-3 border-2 border-gray-300 focus:border-black focus:outline-none mb-4"
+                />
+
+                <div className="flex justify-between items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setconfirmRidePopUpPanel(false);
+                            setridePopUpPanel(false);
+                        }}
+                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl w-1/2 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl w-1/2 transition-colors shadow-md"
+                    >
+                        Start Ride
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+export default ConfirmRidePopUp;

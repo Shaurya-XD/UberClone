@@ -70,3 +70,47 @@ exports.logoutCaptain = async (req, res) => {
     res.clearCookie('token');
     res.status(200).json({ message: 'Logout successful' });
 };
+
+exports.updateCaptainLocation = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const { lat, lng } = req.body;
+
+        const captain = await captainModel.findByIdAndUpdate(
+            req.captain._id,
+            { 'vehicle.location.lat': lat, 'vehicle.location.lng': lng },
+            { new: true }
+        );
+
+        res.status(200).json({ message: 'Location updated', captain });
+    } catch (error) {
+        console.error('Error updating captain location:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.updateCaptainStatus = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const { status } = req.body;
+
+        const captain = await captainModel.findByIdAndUpdate(
+            req.captain._id,
+            { status },
+            { new: true }
+        );
+
+        res.status(200).json({ message: 'Status updated', captain });
+    } catch (error) {
+        console.error('Error updating captain status:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

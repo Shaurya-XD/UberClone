@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-const { registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain } = require('../controllers/captain.controller');
-const { loginUser } = require('../controllers/user.controller');
+const { registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain, updateCaptainLocation, updateCaptainStatus } = require('../controllers/captain.controller');
 const { authCaptain } = require('../middlewares/auth.middleware');
 
 router.post('/register', [
@@ -23,5 +22,14 @@ router.post('/login', [
 router.get('/profile', authCaptain, getCaptainProfile);
 
 router.get('/logout', authCaptain, logoutCaptain);
+
+router.put('/location', authCaptain, [
+    body('lat').isFloat().withMessage('Valid latitude is required'),
+    body('lng').isFloat().withMessage('Valid longitude is required')
+], updateCaptainLocation);
+
+router.put('/status', authCaptain, [
+    body('status').isIn(['active', 'inactive']).withMessage('Status must be active or inactive')
+], updateCaptainStatus);
 
 module.exports = router;

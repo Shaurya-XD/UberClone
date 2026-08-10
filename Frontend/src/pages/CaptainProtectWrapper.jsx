@@ -1,10 +1,11 @@
 import axios from 'axios';
 import React, {useContext, useEffect, useState} from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CaptainDataContext } from '../context/captainContext';
+import { CaptainDataContext } from '../context/CaptainContext';
+
 
 const CaptainProtectWrapper = ({children}) => {
-	const token = localStorage.getItem('token')
+	const token = localStorage.getItem('captainToken') || localStorage.getItem('token')
 	const navigate = useNavigate();
 	const {captain, setcaptain} = useContext(CaptainDataContext);
 	const [isLoading, setisLoading] = useState(true)
@@ -28,7 +29,7 @@ const CaptainProtectWrapper = ({children}) => {
 			}
 		}).catch(err => {
 			console.log(err)
-			localStorage.removeItem('token')
+			localStorage.removeItem('captainToken')
 			navigate('/captain-login')
 		})
 
