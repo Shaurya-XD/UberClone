@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Empty makes browser API calls use the same public origin.
+        VITE_BASE_URL: ""
+    platform: linux/arm64
+    env_file: ./Backend/.env
+    ports:
+      - "4000:4000"
+    init: true
+    restart: unless-stopped
+    mem_limit: 800m

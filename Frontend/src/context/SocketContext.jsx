@@ -8,7 +8,7 @@ const SocketProvider = ({ children }) => {
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const backendUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
+        const backendUrl = import.meta.env.VITE_BASE_URL || window.location.origin;
         const role = window.location.pathname.startsWith('/captain') ? 'captain' : 'user';
         const token = localStorage.getItem(`${role}Token`) || localStorage.getItem('token');
 
@@ -54,7 +54,7 @@ const SocketProvider = ({ children }) => {
         localStorage.setItem('token', token); // compatibility with older sessions
         localStorage.setItem('role', role);
 
-        const backendUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
+        const backendUrl = import.meta.env.VITE_BASE_URL || window.location.origin;
         const newSocket = io(backendUrl, {
             auth: { token, role },
             transports: ['websocket', 'polling']

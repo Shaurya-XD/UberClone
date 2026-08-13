@@ -3,15 +3,20 @@ const userModel = require('./models/user.model');
 const captainModel = require('./models/captain.model');
 const blacklistModel = require('./models/blacklistToken.model');
 const { setIo, sendMessageToSocketId } = require('./utils/socket.util');
+const { allowedOrigins, isAllowedOrigin } = require('./config/cors');
 
 const initSocket = (server) => {
     const { Server } = require('socket.io');
 
     const io = new Server(server, {
         cors: {
-            origin: '*',
-            methods: ['GET', 'POST']
-        }
+            origin: allowedOrigins,
+            methods: ['GET', 'POST'],
+            credentials: true
+        },
+        // Socket.IO's CORS option has no request context. Validate the request
+        // here so ECS same-origin traffic is accepted without an IP allowlist.
+        allowRequest: (req, callback) => callback(null, isAllowedOrigin(req.headers.origin, req))
     });
 
     io.use(async (socket, next) => {
