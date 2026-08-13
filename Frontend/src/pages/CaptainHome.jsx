@@ -176,7 +176,7 @@ const CaptainHome = () => {
         <div className="h-screen w-screen relative bg-gray-100 overflow-hidden flex flex-col justify-between">
             {/* Header */}
             <div className="fixed left-4 top-4 z-20 flex justify-between items-center w-[calc(100%-2rem)]">
-                <img className="w-20 drop-shadow-md" src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="Uber" />
+                <img className="w-20 drop-shadow-md" src="https://www.pngegg.com/en/png-pybra" alt="" />
                 <Link to="/captain/logout" className="h-10 w-10 bg-white flex items-center justify-center rounded-full shadow-md">
                     <i className="text-xl font-bold ri-logout-box-r-line text-gray-800"></i>
                 </Link>

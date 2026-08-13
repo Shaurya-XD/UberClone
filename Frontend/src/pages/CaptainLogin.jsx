@@ -38,7 +38,7 @@ const CaptainLogin = () => {
     <div className='p-7 flex flex-col justify-between h-screen'>
       <div>
         <form onSubmit={(e) => submitHandler(e)}>
-          <img className='w-16 mb-5' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" alt="" />
+          <img className='w-16 mb-5' src="" alt="" />
           <h3 className='text-md font-semibold mb-2'>What's your email</h3>
           <input 
             className='bg-gray-100 rounded px-4 py-2 border w-full' 

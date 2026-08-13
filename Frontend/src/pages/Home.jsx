@@ -299,8 +299,8 @@ const Home = () => {
             {/* Uber Logo */}
             <img
                 className="w-20 absolute left-4 top-4 z-20 drop-shadow-md pointer-events-none"
-                src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png"
-                alt="Uber Logo"
+                src="https://in.pinterest.com/pin/cars-silhouette-png-images-vector-car-icon-car-icons-car-clipart-png-car-png-image-for-free-download--252131279126621666/"
+                alt=""
             />
 
             {/* Interactive Live Map */}
